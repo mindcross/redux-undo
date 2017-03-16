@@ -14,20 +14,20 @@ function insert (history, state, limit) {
   debug.log('inserting', state)
   debug.log('new free: ', limit - lengthWithoutFuture(history))
 
-  const { past, _latestUnfiltered } = history
+  const { past, present } = history
   const historyOverflow = limit && lengthWithoutFuture(history) >= limit
 
   const pastSliced = past.slice(historyOverflow ? 1 : 0)
-  const newPast = _latestUnfiltered != null
+  const newPast = present != null
     ? [
       ...pastSliced,
-      _latestUnfiltered
+      present
     ] : pastSliced
 
   return {
     past: newPast,
     present: state,
-    _latestUnfiltered: state,
+//    _latestUnfiltered: state,
     future: []
   }
 }
