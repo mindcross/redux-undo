@@ -1,6 +1,6 @@
 {
-  "name": "redux-undo",
-  "version": "1.0.0-beta9-8",
+  "name": "mindcross-redux-undo",
+  "version": "1.0.0",
   "description": "simple undo/redo functionality for redux state containers",
   "main": "lib/index.js",
   "typings": "typings.d.ts",
@@ -17,7 +17,7 @@
     "build:umd:min": "cross-env BABEL_ENV=commonjs NODE_ENV=production webpack",
     "clean": "./node_modules/.bin/rimraf lib dist es",
     "lint": "./node_modules/.bin/eslint webpack.config.babel.js src test",
-    "prepublish": "npm run lint && npm run test && npm run clean && npm run build",
+    "prepublish": "npm run lint && npm run clean && npm run build",
     "test": "cross-env NODE_ENV=test ./node_modules/.bin/mocha --compilers js:babel-core/register",
     "test:bail": "npm run test:watch -- --bail",
     "test:cov": "./node_modules/.bin/babel-node ./node_modules/.bin/isparta cover --root src/ ./node_modules/.bin/_mocha",
@@ -31,7 +31,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/omnidan/redux-undo.git"
+    "url": "https://github.com/mindcross/redux-undo.git"
   },
   "keywords": [
     "redux",
@@ -40,12 +40,12 @@
     "flux",
     "time travel"
   ],
-  "author": "Daniel Bugl <me@omnidan.net> (https://github.com/omnidan)",
+  "author": "mindcross (https://github.com/mindcross)",
   "license": "MIT",
   "bugs": {
-    "url": "https://github.com/omnidan/redux-undo/issues"
+    "url": "https://github.com/mindcross/redux-undo/issues"
   },
-  "homepage": "https://github.com/omnidan/redux-undo",
+  "homepage": "https://github.com/mindcross/redux-undo",
   "devDependencies": {
     "babel-cli": "^6.11.4",
     "babel-core": "^6.11.4",
