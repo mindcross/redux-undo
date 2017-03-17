@@ -27,49 +27,44 @@ function insert (history, state, limit) {
   return {
     past: newPast,
     present: state,
-//    _latestUnfiltered: state,
     future: []
   }
 }
 
 // undo: go back to the previous point in history
 function undo (history) {
-  const { past, future, _latestUnfiltered } = history
+  const { past, present, future } = history
 
   if (past.length <= 0) return history
 
-  const newFuture = _latestUnfiltered != null
-    ? [
-      _latestUnfiltered,
-      ...future
-    ] : future
-
   const newPresent = past[past.length - 1]
+  const newFuture = [
+    present,
+    ...future
+  ]
   return {
     past: past.slice(0, past.length - 1), // remove last element from past
     present: newPresent, // set element as new present
-    _latestUnfiltered: newPresent,
     future: newFuture
   }
 }
 
 // redo: go to the next point in history
 function redo (history) {
-  const { past, future, _latestUnfiltered } = history
+  const { past, present, future } = history
 
   if (future.length <= 0) return history
 
-  const newPast = _latestUnfiltered != null
-    ? [
-      ...past,
-      _latestUnfiltered
-    ] : past
+  const newPast = [
+    ...past,
+    present
+  ]
 
   const newPresent = future[0]
+  const newFuture = future.slice(1, future.length)
   return {
-    future: future.slice(1, future.length), // remove element from future
+    future: newFuture, // remove element from future
     present: newPresent, // set element as new present
-    _latestUnfiltered: newPresent,
     past: newPast
   }
 }
@@ -79,15 +74,14 @@ function jumpToFuture (history, index) {
   if (index === 0) return redo(history)
   if (index < 0 || index >= history.future.length) return history
 
-  const { past, future, _latestUnfiltered } = history
+  const { past, present, future } = history
 
   const newPresent = future[index]
 
   return {
     future: future.slice(index + 1),
     present: newPresent,
-    _latestUnfiltered: newPresent,
-    past: past.concat([_latestUnfiltered])
+    past: past.concat([present])
       .concat(future.slice(0, index))
   }
 }
@@ -97,16 +91,15 @@ function jumpToPast (history, index) {
   if (index === history.past.length - 1) return undo(history)
   if (index < 0 || index >= history.past.length) return history
 
-  const { past, future, _latestUnfiltered } = history
+  const { past, present, future } = history
 
   const newPresent = past[index]
 
   return {
     future: past.slice(index + 1)
-      .concat([_latestUnfiltered])
+      .concat([present])
       .concat(future),
     present: newPresent,
-    _latestUnfiltered: newPresent,
     past: past.slice(0, index)
   }
 }
@@ -119,18 +112,13 @@ function jump (history, n) {
 }
 
 // createHistory
-function createHistory (state, ignoreInitialState) {
+function createHistory (state) {
   // ignoreInitialState essentially prevents the user from undoing to the
   // beginning, in the case that the undoable reducer handles initialization
   // in a way that can't be redone simply
-  return ignoreInitialState ? {
+  return {
     past: [],
     present: state,
-    future: []
-  } : {
-    past: [],
-    present: state,
-    _latestUnfiltered: state,
     future: []
   }
 }
@@ -157,8 +145,7 @@ export default function undoable (reducer, rawConfig = {}) {
       Array.isArray(rawConfig.clearHistoryType)
       ? rawConfig.clearHistoryType
       : [rawConfig.clearHistoryType || ActionTypes.CLEAR_HISTORY],
-    neverSkipReducer: rawConfig.neverSkipReducer || false,
-    ignoreInitialState: rawConfig.ignoreInitialState || false
+    neverSkipReducer: rawConfig.neverSkipReducer || false
   }
 
   return (state = config.history, action = {}, ...slices) => {
@@ -171,16 +158,11 @@ export default function undoable (reducer, rawConfig = {}) {
       if (state === undefined) {
         history = config.history = createHistory(reducer(
           state, { type: '@@redux-undo/CREATE_HISTORY' }),
-          config.ignoreInitialState,
           ...slices
         )
         debug.log('do not initialize on probe actions')
       } else if (isHistory(state)) {
-        history = config.history = config.ignoreInitialState
-          ? state : {
-            ...state,
-            _latestUnfiltered: state.present
-          }
+        history = state
         debug.log('initialHistory initialized: initialState is a history', config.history)
       } else {
         history = config.history = createHistory(state)
